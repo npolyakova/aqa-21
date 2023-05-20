@@ -17,9 +17,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class SignInTest extends BaseTest {
 
-    private SignInPage signInPage = new SignInPage();
-    private SignUpPage signUpPage = new SignUpPage();
-    private BasePage basePage = new BasePage();
+    private final SignInPage signInPage = new SignInPage();
+    private final SignUpPage signUpPage = new SignUpPage();
+    private final BasePage basePage = new BasePage();
 
     @BeforeEach
     public void setUrl() {
@@ -62,25 +62,6 @@ public class SignInTest extends BaseTest {
         );
     }
 
-    @Test
-    public void shouldNotLoginWithoutData() {
-
-    }
-
-    @Test
-    public void shouldNotLoginWithoutLogin() {
-
-    }
-
-    @Test
-    public void shouldNotLoginWithoutPassword() {
-
-    }
-
-    @Test
-    public void shouldShowValidationErrorIfEmailIsInvalid() {
-
-    }
 
     static Stream<Arguments> userData() {
         return Stream.of(
@@ -88,4 +69,5 @@ public class SignInTest extends BaseTest {
                 Arguments.of("noemail@here.com" + new Date().getTime(), faker.internet().password())
         );
     }
+
 }
