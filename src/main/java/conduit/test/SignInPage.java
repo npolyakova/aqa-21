@@ -1,14 +1,32 @@
 package conduit.test;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.PageFactory;
 
 public class SignInPage extends BasePage{
 
-    public By MESSAGE_ERROR = By.className("error-messages");
+    WebDriver driver;
 
-    public By INPUT_EMAIL = By.cssSelector("[type='email']");
+    @FindBy(className = "error-messages")
+    public By MESSAGE_ERROR;
 
-    public By INPUT_PASSWORD = By.cssSelector("[type='password']");
+    @FindBy(css = "[type='email']")
+    public By INPUT_EMAIL;
 
-    public By BUTTON_SUBMIT = By.cssSelector("[type='submit']");
+    @FindBy(css = "[type='password']")
+    public By INPUT_PASSWORD;
+
+    @FindBy(css = "[type='submit']")
+    public By BUTTON_SUBMIT;
+
+    public SignInPage(WebDriver driver) {
+        this.driver = driver;
+        PageFactory.initElements(driver, this);
+    }
+
+    public void enterEmail(String email) {
+        driver.findElement(INPUT_EMAIL).sendKeys(email);
+    }
 }

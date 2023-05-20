@@ -1,6 +1,7 @@
 package conduit.test;
 
 import com.github.javafaker.Faker;
+import conduit.test.value.User;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -23,5 +24,13 @@ public class BaseTest {
     @AfterEach
     public void closeAfterEach() {
         driver.close();
+    }
+
+    public User fakeUser() {
+        return User.newBuilder()
+                .setUserName(faker.name().username())
+                .setUserEmail(faker.internet().emailAddress())
+                .setUserPassword(faker.internet().password())
+                .build();
     }
 }

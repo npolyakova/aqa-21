@@ -1,5 +1,6 @@
 package conduit.test;
 
+import conduit.test.value.User;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.By;
@@ -12,7 +13,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class SignUpTest extends BaseTest {
 
-    private SignUpPage signUpPage = new SignUpPage();
+    private SignUpPage signUpPage;
     private BasePage basePage = new BasePage();
 
     @BeforeEach
@@ -20,37 +21,34 @@ public class SignUpTest extends BaseTest {
         baseUrl = "https://react-redux.realworld.io/#";
         driver = new ChromeDriver();
         wait = new WebDriverWait(driver, Duration.ofMillis(8000));
+        signUpPage = new SignUpPage(driver);
     }
 
     @Test
     public void shouldSignUpWithCorrectData() {
-        String name = faker.name().username();
-        String email = faker.internet().emailAddress();
-        String pass = faker.internet().password();
+        final User user = fakeUser();
 
         driver.get(baseUrl + "/register");
 
-        driver.findElement(signUpPage.INPUT_USERNAME).sendKeys(name);
-        driver.findElement(signUpPage.INPUT_EMAIL).sendKeys(email);
-        driver.findElement(signUpPage.INPUT_PASSWORD).sendKeys(pass);
+        signUpPage.enterName(user.getUsername());
+        signUpPage.enterEmail(user.getEmail());
+        signUpPage.enterPassword(user.getPassword());
         driver.findElement(signUpPage.BUTTON_SUBMIT).click();
 
         assertThat(driver.findElement(signUpPage.BUTTON_SUBMIT).isEnabled()).isFalse();
         wait.until(driver -> driver.findElement(By.xpath("//a[text()='Your Feed']")));
-        driver.findElement(By.cssSelector(".nav-link[href='#@" + name + "']")).isDisplayed();
+        driver.findElement(By.cssSelector(".nav-link[href='#@" + user.getUsername() + "']")).isDisplayed();
     }
 
     @Test
     public void shouldShowValidationErrorIfEmailIsIncorrect() {
-        String name = faker.name().username();
-        String email = faker.name().username();
-        String pass = faker.internet().password();
+        final User user = fakeUser();
 
         driver.get(baseUrl + "/register");
 
-        driver.findElement(signUpPage.INPUT_USERNAME).sendKeys(name);
-        driver.findElement(signUpPage.INPUT_EMAIL).sendKeys(email);
-        driver.findElement(signUpPage.INPUT_PASSWORD).sendKeys(pass);
+        driver.findElement(signUpPage.INPUT_USERNAME).sendKeys(user.getUsername());
+        driver.findElement(signUpPage.INPUT_EMAIL).sendKeys(user.getEmail());
+        driver.findElement(signUpPage.INPUT_PASSWORD).sendKeys(user.getPassword());
         driver.findElement(signUpPage.BUTTON_SUBMIT).click();
 
         assertThat(driver.findElement(By.cssSelector("input:invalid")).isDisplayed()).isTrue();
@@ -63,7 +61,7 @@ public class SignUpTest extends BaseTest {
         driver.findElement(signUpPage.BUTTON_SUBMIT).click();
 
         basePage.checkErrorMessage(
-                signUpPage.MESSAGE_BLANK_VALUE,
+                signUpPage.MESSAGE_ERROR,
                 wait,
                 driver,
                 "email",
@@ -73,15 +71,15 @@ public class SignUpTest extends BaseTest {
 
     @Test
     public void shouldNotSignUpWithBlankUsername() {
-        String email = faker.internet().emailAddress();
+        User newUser = User.newBuilder().setUserEmail(faker.internet().emailAddress()).build();
 
         driver.get(baseUrl + "/register");
 
-        driver.findElement(signUpPage.INPUT_EMAIL).sendKeys(email);
+        driver.findElement(signUpPage.INPUT_EMAIL).sendKeys(newUser.getEmail());
         driver.findElement(signUpPage.BUTTON_SUBMIT).click();
 
         basePage.checkErrorMessage(
-                signUpPage.MESSAGE_BLANK_VALUE,
+                signUpPage.MESSAGE_ERROR,
                 wait,
                 driver,
                 "username",
@@ -101,7 +99,7 @@ public class SignUpTest extends BaseTest {
         driver.findElement(signUpPage.BUTTON_SUBMIT).click();
 
         basePage.checkErrorMessage(
-                signUpPage.MESSAGE_BLANK_VALUE,
+                signUpPage.MESSAGE_ERROR,
                 wait,
                 driver,
                 "password",

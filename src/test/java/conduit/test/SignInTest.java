@@ -17,8 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class SignInTest extends BaseTest {
 
-    private SignInPage signInPage = new SignInPage();
-    private SignUpPage signUpPage = new SignUpPage();
+    private SignInPage signInPage;
     private BasePage basePage = new BasePage();
 
     @BeforeEach
@@ -26,6 +25,7 @@ public class SignInTest extends BaseTest {
         baseUrl = "https://react-redux.realworld.io/#/login";
         driver = new ChromeDriver();
         wait = new WebDriverWait(driver, Duration.ofMillis(8000));
+        signInPage = new SignInPage(driver);
     }
 
     @Test
@@ -46,15 +46,13 @@ public class SignInTest extends BaseTest {
     @ParameterizedTest
     @MethodSource("userData")
     public void shouldNotSignInWithIncorrectLogin(String email, String password) {
-        driver.get(baseUrl);
-
         driver.findElement(signInPage.INPUT_EMAIL)
                 .sendKeys(email);
         driver.findElement(signInPage.INPUT_PASSWORD).sendKeys(password);
         driver.findElement(signInPage.BUTTON_SUBMIT).click();
 
         basePage.checkErrorMessage(
-                signUpPage.MESSAGE_BLANK_VALUE,
+                signInPage.MESSAGE_ERROR,
                 wait,
                 driver,
                 "email or password",
@@ -64,22 +62,59 @@ public class SignInTest extends BaseTest {
 
     @Test
     public void shouldNotLoginWithoutData() {
+        driver.findElement(signInPage.BUTTON_SUBMIT).click();
 
+        basePage.checkErrorMessage(
+                signInPage.MESSAGE_ERROR,
+                wait,
+                driver,
+                "email",
+                "can't be blank"
+        );
     }
 
     @Test
     public void shouldNotLoginWithoutLogin() {
+        String password = faker.internet().password();
 
+        driver.findElement(signInPage.INPUT_PASSWORD).sendKeys(password);
+        driver.findElement(signInPage.BUTTON_SUBMIT).click();
+
+        basePage.checkErrorMessage(
+                signInPage.MESSAGE_ERROR,
+                wait,
+                driver,
+                "email",
+                "can't be blank"
+        );
     }
 
     @Test
     public void shouldNotLoginWithoutPassword() {
+        String email = faker.internet().emailAddress();
 
+        driver.findElement(signInPage.INPUT_EMAIL).sendKeys(email);
+        driver.findElement(signInPage.BUTTON_SUBMIT).click();
+
+        basePage.checkErrorMessage(
+                signInPage.MESSAGE_ERROR,
+                wait,
+                driver,
+                "password",
+                "can't be blank"
+        );
     }
 
     @Test
     public void shouldShowValidationErrorIfEmailIsInvalid() {
+        String email = faker.name().username();
+        String pass = faker.internet().password();
 
+        driver.findElement(signInPage.INPUT_EMAIL).sendKeys(email);
+        driver.findElement(signInPage.INPUT_PASSWORD).sendKeys(pass);
+        driver.findElement(signInPage.BUTTON_SUBMIT).click();
+
+        assertThat(driver.findElement(By.cssSelector("input:invalid")).isDisplayed()).isTrue();
     }
 
     static Stream<Arguments> userData() {
