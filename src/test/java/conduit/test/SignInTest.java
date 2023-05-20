@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.openqa.selenium.By;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -62,6 +63,61 @@ public class SignInTest extends BaseTest {
         );
     }
 
+    @ParameterizedTest
+    @MethodSource("userDataEmpty")
+    public void shouldNotLoginWithoutDataStream(String email, String password, String field) {
+        driver.get(baseUrl);
+
+        driver.findElement(signInPage.INPUT_EMAIL).sendKeys(email);
+        driver.findElement(signInPage.INPUT_PASSWORD).sendKeys(password);
+        driver.findElement(signInPage.BUTTON_SUBMIT).click();
+
+        basePage.checkErrorMessage(
+                signUpPage.MESSAGE_BLANK_VALUE,
+                wait,
+                driver,
+                field,
+                "can't be blank"
+        );
+
+    }
+
+    @ParameterizedTest
+    @CsvSource(value = {
+            "eee@mail.ru,'',password",
+            "'',111111,email",
+            "'','',email",
+    })
+    public void shouldNotLoginWithoutDataCSV(String email, String password, String field) {
+        driver.get(baseUrl);
+
+        driver.findElement(signInPage.INPUT_EMAIL).sendKeys(email);
+        driver.findElement(signInPage.INPUT_PASSWORD).sendKeys(password);
+        driver.findElement(signInPage.BUTTON_SUBMIT).click();
+
+        basePage.checkErrorMessage(
+                signUpPage.MESSAGE_BLANK_VALUE,
+                wait,
+                driver,
+                field,
+                "can't be blank"
+        );
+
+    }
+
+    @Test
+    public void shouldShowValidationErrorIfEmailIsIncorrect() {
+        String email = faker.name().username();
+        String pass = faker.internet().password();
+
+        driver.get(baseUrl);
+
+        driver.findElement(signInPage.INPUT_EMAIL).sendKeys(email);
+        driver.findElement(signInPage.INPUT_PASSWORD).sendKeys(pass);
+        driver.findElement(signInPage.BUTTON_SUBMIT).click();
+
+        assertThat(driver.findElement(By.cssSelector("input:invalid")).isDisplayed()).isTrue();
+    }
 
     static Stream<Arguments> userData() {
         return Stream.of(
@@ -69,5 +125,14 @@ public class SignInTest extends BaseTest {
                 Arguments.of("noemail@here.com" + new Date().getTime(), faker.internet().password())
         );
     }
+
+    static Stream<Arguments> userDataEmpty() {
+        return Stream.of(
+                Arguments.of(faker.internet().emailAddress() + new Date().getTime(), "", "password"),
+                Arguments.of("", faker.internet().password(), "email"),
+                Arguments.of("", "", "email")
+        );
+    }
+
 
 }
